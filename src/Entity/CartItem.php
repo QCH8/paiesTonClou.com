@@ -24,6 +24,14 @@ class CartItem
     #[ORM\Column]
     private ?float $vatRateSnapshot = null;
 
+    #[ORM\ManyToOne(inversedBy: 'cartItem')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    private ?Cart $cart = null;
+
+    #[ORM\ManyToOne(inversedBy: 'cartItems')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?ProductVariant $productVariant = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -61,6 +69,30 @@ class CartItem
     public function setVatRateSnapshot(float $vatRateSnapshot): static
     {
         $this->vatRateSnapshot = $vatRateSnapshot;
+
+        return $this;
+    }
+
+    public function getCart(): ?Cart
+    {
+        return $this->cart;
+    }
+
+    public function setCart(?Cart $cart): static
+    {
+        $this->cart = $cart;
+
+        return $this;
+    }
+
+    public function getProductVariant(): ?ProductVariant
+    {
+        return $this->productVariant;
+    }
+
+    public function setProductVariant(?ProductVariant $productVariant): static
+    {
+        $this->productVariant = $productVariant;
 
         return $this;
     }

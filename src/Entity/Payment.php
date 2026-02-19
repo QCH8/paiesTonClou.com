@@ -24,10 +24,10 @@ class Payment
     #[Assert\Unique()]
     private ?string $stripeCheckoutSessionId = null;
 
-    #[ORM\Column(length: 180, nullable: true)]
+    #[ORM\Column(length: 180, unique: true, nullable: true)]
     private ?string $stripePaymentIntentId = null;
 
-    #[ORM\Column]
+    #[ORM\Column(options:["comment" => "Amount in cents"])]
     private ?int $amountTTC = null;
 
     #[ORM\Column(length: 100)]
@@ -38,6 +38,10 @@ class Payment
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $idempotencyKey = null;
+
+    #[ORM\ManyToOne(cascade: ['persist'], inversedBy: 'payments')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    private ?Order $order = null;
 
     public function __construct(){
         $this->setCreatedAt(new \DateTimeImmutable("now", new \DateTimeZone("Europe/Paris")));
@@ -140,6 +144,18 @@ class Payment
     public function setIdempotencyKey(?string $idempotencyKey): static
     {
         $this->idempotencyKey = $idempotencyKey;
+
+        return $this;
+    }
+
+    public function getOrder(): ?Order
+    {
+        return $this->order;
+    }
+
+    public function setOrder(?Order $order): static
+    {
+        $this->order = $order;
 
         return $this;
     }

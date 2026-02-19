@@ -28,6 +28,14 @@ class OrderItem
     #[ORM\Column(length: 255)]
     private ?string $stockKeepingUnitSnapshot = null;
 
+    #[ORM\ManyToOne(inversedBy: 'orderItems')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    private ?Order $order = null;
+
+    #[ORM\ManyToOne(inversedBy: 'orderItems')]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?ProductVariant $productVariant = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -89,6 +97,30 @@ class OrderItem
     public function setStockKeepingUnitSnapshot(string $stockKeepingUnitSnapshot): static
     {
         $this->stockKeepingUnitSnapshot = $stockKeepingUnitSnapshot;
+
+        return $this;
+    }
+
+    public function getOrder(): ?Order
+    {
+        return $this->order;
+    }
+
+    public function setOrder(?Order $order): static
+    {
+        $this->order = $order;
+
+        return $this;
+    }
+
+    public function getProductVariant(): ?ProductVariant
+    {
+        return $this->productVariant;
+    }
+
+    public function setProductVariant(?ProductVariant $productVariant): static
+    {
+        $this->productVariant = $productVariant;
 
         return $this;
     }

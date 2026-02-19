@@ -32,6 +32,10 @@ class StripeEvent
     #[ORM\Column(length: 100)]
     private ?string $processingStatus = null;
 
+    #[ORM\ManyToOne(inversedBy: 'stripeEvents')]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?Order $order = null;
+
     public function __construct(){
         $this->setReceivedAt(new \DateTimeImmutable("now", new \DateTimeZone("Europe/Paris")));
     }
@@ -65,12 +69,12 @@ class StripeEvent
         return $this;
     }
 
-    public function getPayload(): array
+    public function getPayload(): ?array
     {
         return $this->payload;
     }
 
-    public function setPayload(array $payload): static
+    public function setPayload(?array $payload): static
     {
         $this->payload = $payload;
 
@@ -109,6 +113,18 @@ class StripeEvent
     public function setProcessingStatus(string $processingStatus): static
     {
         $this->processingStatus = $processingStatus;
+
+        return $this;
+    }
+
+    public function getOrder(): ?Order
+    {
+        return $this->order;
+    }
+
+    public function setOrder(?Order $order): static
+    {
+        $this->order = $order;
 
         return $this;
     }

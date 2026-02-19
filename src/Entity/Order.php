@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\OrderRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -46,8 +48,37 @@ class Order
     #[ORM\Embedded(class: ShippingAddress::class, columnPrefix: 'shipping_')]
     private ShippingAddress $shippingAddress;
 
+    #[ORM\ManyToOne(inversedBy: 'orders')]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?User $user = null;
+
+    #[ORM\OneToOne(cascade: ['persist'])]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?Cart $cart = null;
+
+    /**
+     * @var Collection<int, OrderItem>
+     */
+    #[ORM\OneToMany(targetEntity: OrderItem::class, mappedBy: 'order', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    private Collection $orderItems;
+
+    /**
+     * @var Collection<int, StripeEvent>
+     */
+    #[ORM\OneToMany(targetEntity: StripeEvent::class, mappedBy: 'order', cascade: ['persist'])]
+    private Collection $stripeEvents;
+
+    /**
+     * @var Collection<int, Payment>
+     */
+    #[ORM\OneToMany(targetEntity: Payment::class, mappedBy: 'order', cascade: ['persist'])]
+    private Collection $payments;
+
     public function __construct(){
         $this->setCreatedAt(new \DateTimeImmutable("now", new \DateTimeZone("Europe/Paris")));
+        $this->orderItems = new ArrayCollection();
+        $this->stripeEvents = new ArrayCollection();
+        $this->payments = new ArrayCollection();
     }
 
     public function setShippingAddress(ShippingAddress $shippingAddress): static
@@ -174,6 +205,120 @@ class Order
     public function setPaidAt(?\DateTimeImmutable $paidAt): static
     {
         $this->paidAt = $paidAt;
+
+        return $this;
+    }
+
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
+
+    public function setUser(?User $user): static
+    {
+        $this->user = $user;
+
+        return $this;
+    }
+
+    public function getCart(): ?Cart
+    {
+        return $this->cart;
+    }
+
+    public function setCart(?Cart $cart): static
+    {
+        $this->cart = $cart;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, OrderItem>
+     */
+    public function getOrderItems(): Collection
+    {
+        return $this->orderItems;
+    }
+
+    public function addOrderItem(OrderItem $orderItem): static
+    {
+        if (!$this->orderItems->contains($orderItem)) {
+            $this->orderItems->add($orderItem);
+            $orderItem->setOrder($this);
+        }
+
+        return $this;
+    }
+
+    public function removeOrderItem(OrderItem $orderItem): static
+    {
+        if ($this->orderItems->removeElement($orderItem)) {
+            // set the owning side to null (unless already changed)
+            if ($orderItem->getOrder() === $this) {
+                $orderItem->setOrder(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, StripeEvent>
+     */
+    public function getStripeEvents(): Collection
+    {
+        return $this->stripeEvents;
+    }
+
+    public function addStripeEvent(StripeEvent $stripeEvent): static
+    {
+        if (!$this->stripeEvents->contains($stripeEvent)) {
+            $this->stripeEvents->add($stripeEvent);
+            $stripeEvent->setOrder($this);
+        }
+
+        return $this;
+    }
+
+    public function removeStripeEvent(StripeEvent $stripeEvent): static
+    {
+        if ($this->stripeEvents->removeElement($stripeEvent)) {
+            // set the owning side to null (unless already changed)
+            if ($stripeEvent->getOrder() === $this) {
+                $stripeEvent->setOrder(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Payment>
+     */
+    public function getPayment(): Collection
+    {
+        return $this->payments;
+    }
+
+    public function addPayment(Payment $payment): static
+    {
+        if (!$this->payments->contains($payment)) {
+            $this->payments->add($payment);
+            $payment->setOrder($this);
+        }
+
+        return $this;
+    }
+
+    public function removePayment(Payment $payment): static
+    {
+        if ($this->payments->removeElement($payment)) {
+            // set the owning side to null (unless already changed)
+            if ($payment->getOrder() === $this) {
+                $payment->setOrder(null);
+            }
+        }
 
         return $this;
     }
