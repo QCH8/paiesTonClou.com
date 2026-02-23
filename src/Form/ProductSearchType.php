@@ -30,12 +30,12 @@ class ProductSearchType extends AbstractType
             ->add('minPriceHT', IntegerType::class,[
                 'required' => false,
                 'label'=> false,
-                'attr' => ['placeholder' => 'Min']
+                'attr' => ['placeholder' => 'Min €']
             ])
             ->add('maxPriceHT', IntegerType::class,[
                 'required' => false,
                 'label' => false,
-                'attr' => ['placeholder' => 'max'],
+                'attr' => ['placeholder' => 'Max €'],
             ])
             ->add('category', EntityType::class,[
                 'class' => Category::class,

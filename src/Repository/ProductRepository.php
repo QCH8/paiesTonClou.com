@@ -51,10 +51,14 @@ class ProductRepository extends ServiceEntityRepository
 
         //Price
         if (null !== $search->getMinPriceHT()) {
-            $initialQuery->andWhere('v.priceHT >= :min')->setParameter('min', $search->getMinPriceHT());
+            $initialQuery
+                ->andWhere('v.priceHT >= :min')
+                ->setParameter('min', $search->getMinPriceHT() * 100);
         }
         if (null !== $search->getMaxPriceHT()) {
-            $initialQuery->andWhere('v.priceHT <= :max')->setParameter('max', $search->getMaxPriceHT());
+            $initialQuery
+                ->andWhere('v.priceHT <= :max')
+                ->setParameter('max', $search->getMaxPriceHT() * 100);
         }
 
         return $initialQuery->getQuery();
