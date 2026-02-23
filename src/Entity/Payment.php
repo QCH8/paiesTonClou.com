@@ -4,9 +4,11 @@ namespace App\Entity;
 
 use App\Repository\PaymentRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: PaymentRepository::class)]
+#[UniqueEntity(fields: ['stripeCheckoutSessionId'], message: 'Checkout session must be unique.')]
 class Payment
 {
     #[ORM\Id]
@@ -21,7 +23,6 @@ class Payment
     private ?string $status = null;
 
     #[ORM\Column(length: 180, unique: true)]
-    #[Assert\Unique()]
     private ?string $stripeCheckoutSessionId = null;
 
     #[ORM\Column(length: 180, unique: true, nullable: true)]

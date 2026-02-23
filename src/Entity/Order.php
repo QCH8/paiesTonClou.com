@@ -6,10 +6,12 @@ use App\Repository\OrderRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: OrderRepository::class)]
 #[ORM\Table(name: '`order`')]
+#[UniqueEntity(fields: ['number'], message: 'Order number must be unique.')]
 class Order
 {
     #[ORM\Id]
@@ -18,7 +20,6 @@ class Order
     private ?int $id = null;
 
     #[ORM\Column(length: 180, unique:true)]
-    #[Assert\Unique()]
     private ?string $number = null;
 
     #[ORM\Column(length: 100)]
@@ -296,7 +297,7 @@ class Order
     /**
      * @return Collection<int, Payment>
      */
-    public function getPayment(): Collection
+    public function getPayments(): Collection
     {
         return $this->payments;
     }
