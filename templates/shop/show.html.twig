@@ -1,0 +1,42 @@
+{%  extends "base.html.twig" %}
+
+{% block title %}{{ product.name }}{% endblock %}
+
+{% block body %}
+<section class="container py-4">
+    <p><a href="{{ path('shop_products_index') }}">← Retour au catalogue</a></p>
+
+    <h1>{{ product.name }}</h1>
+    <p>{{ product.description ?: 'Aucune description' }}</p>
+    <p>Marque: {{ product.brandName ?: 'N/A' }}</p>
+    <p>Catégorie: {{ product.category ? product.category.name : 'Non classé' }}</p>
+
+    <h2>Variantes</h2>
+    {% if product.productVariants is empty %}
+        <p>Aucune variante.</p>
+    {% else %}
+        <table>
+            <thead>
+                <tr>
+                    <th>SKU</th>
+                    <th>Nom</th>
+                    <th>Prix</th>
+                    <th>TVA</th>
+                    <th>Actif</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for v in product.productVariants %}
+                    <tr>
+                        <td>{{ v.stockKeepingUnit }}</td>
+                        <td>{{ v.name }}</td>
+                        <td>{{ (v.priceHT / 100)|number_format(2, ',', ' ') }} €</td>
+                        <td>{{ (v.vatRate / 100)|number_format(0, ',', ' ') }} %</td>
+                        <td>{{ v.active ? 'Oui' : 'Non' }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+</section>
+{% endblock %}

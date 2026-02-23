@@ -1,0 +1,54 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Catalogue produits{% endblock %}
+
+{% block body %}
+<section class="container py-4">
+    {{ form_start(searchForm, { method: 'get' }) }}
+        <div style="display:grid; gap:12px; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">
+            {{ form_row(searchForm.q) }}
+            {{ form_row(searchForm.sku) }}
+            {{ form_row(searchForm.minPriceHT) }}
+            {{ form_row(searchForm.maxPriceHT) }}
+            {{ form_row(searchForm.category) }}
+            {{ form_row(searchForm.activeOnly) }}
+        </div>
+        <button type="submit">Rechercher</button>
+    {{ form_end(searchForm) }}
+
+    <p>{{ pagination.total_items }} résultat(s).</p>
+
+    {% if products is empty %}
+        <p>Aucun produit trouvé.</p>
+    {% else %}
+        <div style="display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));">
+            {% for product in products %}
+                <article style="border:1px solid #ddd; border-radius:8px; padding:12px;">
+                    <h2 style="margin-top:0;">{{ product.name }}</h2>
+                    <p>{{ product.description ?: 'Aucune description' }}</p>
+                    <p>Marque: {{ product.brandName ?: 'N/A' }}</p>
+                    <a href="{{ path('shop_products_show', { slug: product.slug }) }}">Voir le produit</a>
+                </article>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {%  if pagination.total_pages > 1 %}
+        <nav aria-label="Pagination" style="margin-top: 16px">
+            {% set current = pagination.page %}
+            {% set qp = app.request.query.all %}
+            <ul style="display: flex; list-style: none; gap: 8px; padding: 0;">
+                {% if current > 1 %}
+                    <li><a href="{{ path('shop_products_index', qp|merge({ page: current - 1 })) }}">Précédent</a></li>
+                {% endif %}
+
+                <li>Page {{ current }} / {{ pagination.total_pages }}</li>
+
+                {% if current < pagination.total_pages %}
+                    <li><a href="{{ path('shop_products_index', qp|merge({ page: current + 1 })) }}">Suivant</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    {% endif %}
+</section>
+{% endblock %}

@@ -15,6 +15,7 @@ class ProductSearch
 
     private ?int $minPriceHT = null;
     private ?int $maxPriceHT = null;
+    private bool $activeOnly = true;
 
     public function getQ(): ?string
     {
@@ -75,6 +76,4 @@ class ProductSearch
     {
         $this->activeOnly = $activeOnly;
     }
-
-    private bool $activeOnly = true;
 }
