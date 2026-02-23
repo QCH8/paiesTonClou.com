@@ -30,9 +30,9 @@
                 <h1 class="h3 mb-3 font-weight-normal">Please sign in</h1>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <label for="username">Email</label>
-                    <input type="email" value="{{ last_username }}" name="_username" id="username" class="form-control" autocomplete="email" required autofocus>
+                    <input type="email" value="{{ last_username }}" name="_username" id="username" class="bg-slate-200" autocomplete="email" required autofocus>
                     <label for="password">Password</label>
-                    <input type="password" name="_password" id="password" class="form-control" autocomplete="current-password" required>
+                    <input type="password" name="_password" id="password" class="bg-slate-200" autocomplete="current-password" required>
                 </div>
                 <input type="hidden" name="_csrf_token" data-controller="csrf-protection" value="{{ csrf_token('authenticate') }}">
 
@@ -45,6 +45,9 @@
                     Sign in
                 </button>
             </form>
+            <div>
+                <a href="{{ path('app_register') }}" class="rounded-full bg-slate-500 hover:bg-slate-700 p-1 text-white m-5 shadow">S'inscrire</a>
+            </div>
         </div>
     </div>
 </div>

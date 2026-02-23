@@ -24,8 +24,10 @@ security:
                 enable_csrf: true
             logout:
                 path: app_logout
+                target: shop_products_index
             remember_me:
                 secret: '%kernel.secret%'
+                lifetime: 604800 #1 week
 
 
             # Activate different ways to authenticate:
