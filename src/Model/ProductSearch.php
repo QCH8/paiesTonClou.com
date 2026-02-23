@@ -12,7 +12,6 @@ class ProductSearch
     private ?string $q = null;
     private ?Category $category = null;
     private ?string $sku = null;
-
     private ?int $minPriceHT = null;
     private ?int $maxPriceHT = null;
     private bool $activeOnly = true;
