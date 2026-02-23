@@ -1,0 +1,51 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Log in!{% endblock %}
+
+{% block body %}
+<div class="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-2xl mx-auto">
+        <div class="text-center mb-5">
+            <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">
+                Connexion
+            </h1>
+            <p class="mt-2 text-sm text-gray-600">
+                Utilisez vos identifiants
+            </p>
+        </div>
+        <div class="bg-white rounded shadow border border-slate-200 p-10">
+            <form method="post">
+                {% if error %}
+                    <div class="rounded-lg border border-red-200 bg-red-50 p-3 text-red-800 mb-4">
+                        {{ error.messageKey|trans(error.messageData, 'security') }}
+                    </div>
+                {% endif %}
+
+                {% if app.user %}
+                    <div class="mb-3">
+                        You are logged in as {{ app.user.userIdentifier }}, <a href="{{ logout_path() }}">Logout</a>
+                    </div>
+                {% endif %}
+
+                <h1 class="h3 mb-3 font-weight-normal">Please sign in</h1>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <label for="username">Email</label>
+                    <input type="email" value="{{ last_username }}" name="_username" id="username" class="form-control" autocomplete="email" required autofocus>
+                    <label for="password">Password</label>
+                    <input type="password" name="_password" id="password" class="form-control" autocomplete="current-password" required>
+                </div>
+                <input type="hidden" name="_csrf_token" data-controller="csrf-protection" value="{{ csrf_token('authenticate') }}">
+
+                    <div class="items-center gap-2">
+                        <input type="checkbox" name="_remember_me" id="_remember_me">
+                        <label for="_remember_me">Remember me</label>
+                    </div>
+
+                <button class="rounded-full bg-sky-500 hover:bg-sky-700 p-1 text-white m-5 shadow" type="submit">
+                    Sign in
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
