@@ -1,0 +1,29 @@
+<nav class="w-full border-b bg-slate-200" aria-label="Navigation principale">
+    <div class="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
+        <a class="font-semibold text-slate-900" href="{{ path('shop_products_index') }}">Payes Ton Clou</a>
+
+        <button
+            class="rounded border px-3 py-2 md:hidden"
+            aria-controls="primary-nav"
+            aria-expanded="false"
+            data-controller="nav"
+            data-action="nav#toggle"
+        >
+            Menu
+        </button>
+
+        <ul id="primary-nav" class="hidden items-center gap-6 md:flex" data-nav-target="menu">
+            {% set currentRoute = app.request.attributes.get('_route') %}
+
+            <li class="hover:underline">
+                <a href="{{ path('shop_products_index') }}" {% if currentRoute == 'shop_products_index' %}aria-current="page"{% endif %}>
+                    Catalogue
+                </a>
+            </li>
+
+            {% if app.user %}
+                <li class="text-sm text-slate-700">Connecte</li>
+            {% endif %}
+        </ul>
+    </div>
+</nav>
