@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Cart;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -14,6 +15,21 @@ class CartRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Cart::class);
+    }
+
+    public function findOpenCartForUser(User $user): ?Cart
+    {
+        return $this->createQueryBuilder('c')
+            ->leftJoin('c.cartItem', 'ci')->addSelect('ci')
+            ->leftJoin('ci.productVariant', 'pv')->addSelect('pv')
+            ->andWhere('c.user = :user')
+            ->andWhere('c.status = :status')
+            ->setParameter('user', $user)
+            ->setParameter('status', 'open')
+            ->orderBy('c.id', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
     }
 
     //    /**

@@ -2,7 +2,9 @@
 
 namespace App\Repository;
 
+use App\Entity\Cart;
 use App\Entity\CartItem;
+use App\Entity\ProductVariant;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -14,6 +16,18 @@ class CartItemRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, CartItem::class);
+    }
+
+    public function findOneByCartAndVariant(Cart $cart, ProductVariant $variant): ?CartItem
+    {
+        return $this->createQueryBuilder('ci')
+            ->andWhere('ci.cart = :cart')
+            ->andWhere('ci.productVariant = :variant')
+            ->setParameter('cart', $cart)
+            ->setParameter('variant', $variant)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
     }
 
     //    /**

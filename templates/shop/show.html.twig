@@ -36,6 +36,7 @@
                             <th class="px-3 py-2 text-left font-semibold text-slate-700">Prix HT</th>
                             <th class="px-3 py-2 text-left font-semibold text-slate-700">TVA</th>
                             <th class="px-3 py-2 text-left font-semibold text-slate-700">Actif</th>
+                            <th class="px-3 py-2 text-left font-semibold text-slate-700">Panier</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">
@@ -50,6 +51,27 @@
                                         <span class="rounded-full bg-emerald-100 px-2 py-1 text-xs font-medium text-emerald-700">Oui</span>
                                     {% else %}
                                         <span class="rounded-full bg-slate-100 px-2 py-1 text-xs font-medium text-slate-600">Non</span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-3 py-2">
+                                    {% if app.user and v.active %}
+                                        <form method="post" action="{{ path('app_cart_add', { id: v.id }) }}" class="flex items-center gap-2">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('cart_add_' ~ v.id) }}">
+                                            <input
+                                                type="number"
+                                                min="1"
+                                                name="quantity"
+                                                value="1"
+                                                class="w-16 rounded-lg border border-slate-300 px-2 py-1 text-xs"
+                                            >
+                                            <button type="submit" class="rounded-lg bg-slate-900 px-2 py-1 text-xs font-semibold text-white hover:bg-slate-700">
+                                                Ajouter
+                                            </button>
+                                        </form>
+                                    {% elseif not app.user %}
+                                        <a href="{{ path('app_login') }}" class="text-xs text-slate-600 underline">Connectez-vous</a>
+                                    {% else %}
+                                        <span class="text-xs text-slate-500">Indisponible</span>
                                     {% endif %}
                                 </td>
                             </tr>
