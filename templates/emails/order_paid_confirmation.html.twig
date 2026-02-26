@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Confirmation de commande</title>
+</head>
+<body style="font-family: Arial, sans-serif; color: #111827; line-height: 1.4;">
+    <h1 style="margin-bottom: 8px;">Paiement confirme</h1>
+    <p style="margin-top: 0;">
+        Merci pour votre commande.
+    </p>
+
+    <p>
+        <strong>Commande:</strong> {{ order.number }}<br>
+        <strong>Date de paiement:</strong>
+        {% if order.paidAt %}
+            {{ order.paidAt|date('d/m/Y H:i') }}
+        {% else %}
+            - 
+        {% endif %}
+    </p>
+
+    <h2 style="margin-top: 24px; margin-bottom: 10px;">Recapitulatif</h2>
+    <table cellpadding="8" cellspacing="0" border="1" style="border-collapse: collapse; width: 100%; border-color: #e5e7eb;">
+        <thead style="background: #f9fafb;">
+            <tr>
+                <th align="left">Produit</th>
+                <th align="left">SKU</th>
+                <th align="right">Quantite</th>
+                <th align="right">Prix HT</th>
+                <th align="right">TVA</th>
+                <th align="right">Total TTC</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in order.orderItems %}
+                {% set lineHt = item.unitPriceHTSnapshot * item.quantity %}
+                {% set lineTtc = (lineHt * (1 + item.vatRateSnapshot))|round(0, 'common') %}
+                <tr>
+                    <td>{{ item.nameSnapshot }}</td>
+                    <td>{{ item.stockKeepingUnitSnapshot }}</td>
+                    <td align="right">{{ item.quantity }}</td>
+                    <td align="right">{{ (item.unitPriceHTSnapshot / 100)|number_format(2, ',', ' ') }} EUR</td>
+                    <td align="right">{{ (item.vatRateSnapshot * 100)|number_format(0, ',', ' ') }} %</td>
+                    <td align="right">{{ (lineTtc / 100)|number_format(2, ',', ' ') }} EUR</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <p style="margin-top: 16px;">
+        <strong>Total TTC paye:</strong> {{ (order.totalTTC / 100)|number_format(2, ',', ' ') }} EUR
+    </p>
+</body>
+</html>
