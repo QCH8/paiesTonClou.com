@@ -78,7 +78,22 @@
                 </div>
             </dl>
         </div>
+
+        <div class="mt-6 rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-white p-5 shadow-sm sm:max-w-sm">
+            <p class="text-sm font-medium text-emerald-900">Pret a finaliser votre commande ?</p>
+            <p class="mt-1 text-xs text-emerald-700">Paiement securise via Stripe</p>
+            <div class="mt-4">
+                <form method="post" action="{{ path('app_stripe_checkout_session_payment') }}" data-turbo="false">
+                    <input type="hidden" name="_token" value="{{ csrf_token('stripe_checkout_start') }}">
+                    <button
+                        type="submit"
+                        class="inline-flex w-full items-center justify-center rounded-xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2"
+                    >
+                        Payer maintenant
+                    </button>
+                </form>
+            </div>
+        </div>
     {% endif %}
 </section>
 {% endblock %}
-

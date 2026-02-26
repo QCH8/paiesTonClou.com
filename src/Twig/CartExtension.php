@@ -30,17 +30,18 @@ class CartExtension extends AbstractExtension
             return 0;
         }
 
-        $cart = $this->cartRepository->findOpenCartForUser($user);
-        if (!$cart) {
+        $openCarts = $this->cartRepository->findOpenCartsForUser($user);
+        if ([] === $openCarts) {
             return 0;
         }
 
         $count = 0;
-        foreach ($cart->getCartItem() as $item) {
-            $count += max(0, (int) $item->getQuantity());
+        foreach ($openCarts as $cart) {
+            foreach ($cart->getCartItem() as $item) {
+                $count += max(0, (int) $item->getQuantity());
+            }
         }
 
         return $count;
     }
 }
-

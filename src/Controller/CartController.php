@@ -178,9 +178,41 @@ final class CartController extends AbstractController
 
     private function getOrCreateOpenCart(User $user): Cart
     {
-        $cart = $this->cartRepository->findOpenCartForUser($user);
-        if ($cart) {
-            return $cart;
+        $openCarts = $this->cartRepository->findOpenCartsForUser($user);
+
+        if (\count($openCarts) > 1) {
+            $targetCart = $openCarts[0];
+
+            foreach (\array_slice($openCarts, 1) as $sourceCart) {
+                foreach ($sourceCart->getCartItem()->toArray() as $sourceItem) {
+                    $variant = $sourceItem->getProductVariant();
+                    if (!$variant) {
+                        $this->em->remove($sourceItem);
+                        continue;
+                    }
+
+                    $targetItem = $this->cartItemRepository->findOneByCartAndVariant($targetCart, $variant);
+                    if ($targetItem) {
+                        $targetItem->setQuantity($targetItem->getQuantity() + $sourceItem->getQuantity());
+                        $this->em->remove($sourceItem);
+                        continue;
+                    }
+
+                    $sourceItem->setCart($targetCart);
+                }
+
+                $sourceCart->setStatus('merged');
+                $sourceCart->setUpdatedAt(new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris')));
+            }
+
+            $targetCart->setUpdatedAt(new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris')));
+            $this->em->flush();
+
+            return $targetCart;
+        }
+
+        if (\count($openCarts) === 1) {
+            return $openCarts[0];
         }
 
         $cart = (new Cart())

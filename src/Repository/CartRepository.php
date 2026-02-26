@@ -32,6 +32,23 @@ class CartRepository extends ServiceEntityRepository
             ->getOneOrNullResult();
     }
 
+    /**
+     * @return list<Cart>
+     */
+    public function findOpenCartsForUser(User $user): array
+    {
+        return $this->createQueryBuilder('c')
+            ->leftJoin('c.cartItem', 'ci')->addSelect('ci')
+            ->leftJoin('ci.productVariant', 'pv')->addSelect('pv')
+            ->andWhere('c.user = :user')
+            ->andWhere('c.status = :status')
+            ->setParameter('user', $user)
+            ->setParameter('status', 'open')
+            ->orderBy('c.id', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
     //    /**
     //     * @return Cart[] Returns an array of Cart objects
     //     */
