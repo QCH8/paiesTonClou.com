@@ -2,12 +2,11 @@
 
 namespace App\Controller;
 
-use App\Entity\Cart;
 use App\Entity\CartItem;
-use App\Entity\User;
 use App\Repository\CartItemRepository;
-use App\Repository\CartRepository;
 use App\Repository\ProductVariantRepository;
+use App\Services\AuthenticatedUserProvider;
+use App\Services\CartManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -19,9 +18,10 @@ use Symfony\Component\Routing\Attribute\Route;
 final class CartController extends AbstractController
 {
     public function __construct(
-        private readonly CartRepository $cartRepository,
         private readonly CartItemRepository $cartItemRepository,
         private readonly ProductVariantRepository $productVariantRepository,
+        private readonly AuthenticatedUserProvider $authenticatedUserProvider,
+        private readonly CartManager $cartManager,
         private readonly EntityManagerInterface $em,
     ) {
     }
@@ -29,12 +29,13 @@ final class CartController extends AbstractController
     #[Route('', name: 'index', methods: ['GET'])]
     public function index(): Response
     {
-        $user = $this->requireUser();
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+        $user = $this->authenticatedUserProvider->getAuthenticatedUser();
         if (!$user) {
             return $this->redirectToRoute('app_login');
         }
 
-        $cart = $this->getOrCreateOpenCart($user);
+        $cart = $this->cartManager->getOrCreateOpenCart($user);
 
         $totalHtCents = 0;
         $totalTtcCents = 0;
@@ -55,7 +56,8 @@ final class CartController extends AbstractController
     #[Route('/add/{id}', name: 'add', methods: ['POST'])]
     public function add(int $id, Request $request): RedirectResponse
     {
-        $user = $this->requireUser();
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+        $user = $this->authenticatedUserProvider->getAuthenticatedUser();
         if (!$user) {
             return $this->redirectToRoute('app_login');
         }
@@ -77,7 +79,7 @@ final class CartController extends AbstractController
         }
 
         $quantity = max(1, $request->request->getInt('quantity', 1));
-        $cart = $this->getOrCreateOpenCart($user);
+        $cart = $this->cartManager->getOrCreateOpenCart($user);
 
         $item = $this->cartItemRepository->findOneByCartAndVariant($cart, $variant);
         if (!$item) {
@@ -107,7 +109,8 @@ final class CartController extends AbstractController
     #[Route('/item/{id}/update', name: 'item_update', methods: ['POST'])]
     public function updateItem(int $id, Request $request): RedirectResponse
     {
-        $user = $this->requireUser();
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+        $user = $this->authenticatedUserProvider->getAuthenticatedUser();
         if (!$user) {
             return $this->redirectToRoute('app_login');
         }
@@ -141,7 +144,8 @@ final class CartController extends AbstractController
     #[Route('/item/{id}/remove', name: 'item_remove', methods: ['POST'])]
     public function removeItem(int $id, Request $request): RedirectResponse
     {
-        $user = $this->requireUser();
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+        $user = $this->authenticatedUserProvider->getAuthenticatedUser();
         if (!$user) {
             return $this->redirectToRoute('app_login');
         }
@@ -168,61 +172,4 @@ final class CartController extends AbstractController
         return $this->redirectToRoute('app_cart_index');
     }
 
-    private function requireUser(): ?User
-    {
-        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
-        $user = $this->getUser();
-
-        return $user instanceof User ? $user : null;
-    }
-
-    private function getOrCreateOpenCart(User $user): Cart
-    {
-        $openCarts = $this->cartRepository->findOpenCartsForUser($user);
-
-        if (\count($openCarts) > 1) {
-            $targetCart = $openCarts[0];
-
-            foreach (\array_slice($openCarts, 1) as $sourceCart) {
-                foreach ($sourceCart->getCartItem()->toArray() as $sourceItem) {
-                    $variant = $sourceItem->getProductVariant();
-                    if (!$variant) {
-                        $this->em->remove($sourceItem);
-                        continue;
-                    }
-
-                    $targetItem = $this->cartItemRepository->findOneByCartAndVariant($targetCart, $variant);
-                    if ($targetItem) {
-                        $targetItem->setQuantity($targetItem->getQuantity() + $sourceItem->getQuantity());
-                        $this->em->remove($sourceItem);
-                        continue;
-                    }
-
-                    $sourceItem->setCart($targetCart);
-                }
-
-                $sourceCart->setStatus('merged');
-                $sourceCart->setUpdatedAt(new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris')));
-            }
-
-            $targetCart->setUpdatedAt(new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris')));
-            $this->em->flush();
-
-            return $targetCart;
-        }
-
-        if (\count($openCarts) === 1) {
-            return $openCarts[0];
-        }
-
-        $cart = (new Cart())
-            ->setUser($user)
-            ->setStatus('open')
-            ->setCurrency('EUR');
-
-        $this->em->persist($cart);
-        $this->em->flush();
-
-        return $cart;
-    }
 }

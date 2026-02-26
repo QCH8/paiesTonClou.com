@@ -3,10 +3,9 @@
 namespace App\Controller;
 
 use App\Entity\StripeEvent;
-use App\Repository\CartRepository;
-use App\Repository\PaymentRepository;
 use App\Repository\StripeEventRepository;
 use App\Services\PaymentConfirmationEmail;
+use App\Services\StripeCheckoutCompletedProcessor;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Stripe\Exception\SignatureVerificationException;
@@ -25,8 +24,7 @@ final class StripeWebhookController extends AbstractController
         Request $request,
         EntityManagerInterface $em,
         StripeEventRepository $stripeEventRepository,
-        PaymentRepository $paymentRepository,
-        CartRepository $cartRepository,
+        StripeCheckoutCompletedProcessor $stripeCheckoutCompletedProcessor,
         PaymentConfirmationEmail $paymentConfirmationEmail,
         LoggerInterface $logger,
         #[Autowire('%env(STRIPE_WEBHOOK_SECRET)%')] string $webhookSecret
@@ -64,37 +62,8 @@ final class StripeWebhookController extends AbstractController
         if ('checkout.session.completed' === $event->type) {
             /** @var \Stripe\Checkout\Session $checkoutSession */
             $checkoutSession = $event->data->object;
-            $checkoutSessionId = $checkoutSession->id ?? null;
-
-            if ($checkoutSessionId) {
-                // Link Stripe checkout result to our local Payment/Order records.
-                $payment = $paymentRepository->findOneBy(['stripeCheckoutSessionId' => $checkoutSessionId]);
-                if ($payment) {
-                    $payment->setStatus('succeeded');
-                    $payment->setStripePaymentIntentId($checkoutSession->payment_intent ?? null);
-
-                    $order = $payment->getOrder();
-                    if ($order && 'paid' !== $order->getStatus()) {
-                        $order->setStatus('paid');
-                        $order->setPaidAt(new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris')));
-                        $orderToNotify = $order;
-                    }
-                }
-            }
-
-            // Empty and close the source cart after successful payment.
-            $cartId = isset($checkoutSession->metadata['cart_id']) ? (int) $checkoutSession->metadata['cart_id'] : null;
-            if ($cartId) {
-                $cart = $cartRepository->find($cartId);
-                if ($cart) {
-                    foreach ($cart->getCartItem()->toArray() as $cartItem) {
-                        $em->remove($cartItem);
-                    }
-
-                    $cart->setStatus('converted');
-                    $cart->setUpdatedAt(new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris')));
-                }
-            }
+            // Toute la logique métier Stripe est déléguée au service dédié.
+            $orderToNotify = $stripeCheckoutCompletedProcessor->process($checkoutSession, $stripeEvent, $event->id, $em);
         }
 
         // Mark the stored event as processed before commit.

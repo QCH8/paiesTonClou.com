@@ -43,10 +43,27 @@ class StripePayment
                 continue;
             }
 
+            // Métadonnées propagées jusqu'au webhook pour rattacher l'achat
+            // à nos entités locales (variant/produit) de manière fiable.
+            $productMetadata = [
+                'sku' => (string) $productVariant->getStockKeepingUnit(),
+            ];
+
+            if (null !== $productVariant->getId()) {
+                $productMetadata['product_variant_id'] = (string) $productVariant->getId();
+            }
+
+            if (null !== $productVariant->getProduct()?->getId()) {
+                $productMetadata['product_id'] = (string) $productVariant->getProduct()?->getId();
+            }
+
             $lineItems[] = [
                 'price_data' => [
                     'currency' => 'eur',
-                    'product_data' => ['name' => $productVariant->getName()],
+                    'product_data' => [
+                        'name' => $productVariant->getName(),
+                        'metadata' => $productMetadata,
+                    ],
                     'unit_amount' => $unitPrice,
                 ],
                 'quantity' => $quantity,
@@ -67,7 +84,11 @@ class StripePayment
             'shipping_address_collection' => [
                 'allowed_countries' => ['FR'],
             ],
-            'metadata' => ['cart_id' => (string) $cart->getId()],
+            'metadata' => [
+                'cart_id' => (string) $cart->getId(),
+            ],
+            // Redondance volontaire avec metadata.cart_id (fallback de résolution).
+            'client_reference_id' => (string) $cart->getId(),
         ]);
     }
 }
