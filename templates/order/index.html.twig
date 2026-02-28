@@ -23,7 +23,7 @@
                                 Commande {{ order.number }}
                             </h2>
                             <p class="mt-1 text-sm text-slate-600">
-                                Passée le {{ order.createdAt ? order.createdAt|date('d/m/Y a H:i') : '-' }}
+                                Passée le {{ order.createdAt ? order.createdAt|date('d/m/Y \\à H:i') : '-' }}
                             </p>
                         </div>
 
@@ -78,3 +78,5 @@
     {% endif %}
 </section>
 {% endblock %}
+
+
