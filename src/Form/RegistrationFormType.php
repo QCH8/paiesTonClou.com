@@ -38,11 +38,11 @@ class RegistrationFormType extends AbstractType
                     'class' => $inputClass,
                 ],
                 'constraints' => [
-                    new NotBlank( message: 'Please enter a password' ),
+                    new NotBlank(message: 'Veuillez saisir un mot de passe.'),
                     new Length(
                         min: 6,
                         max: 4096,
-                        minMessage: 'Your password should be at least {{ limit }} characters',
+                        minMessage: 'Votre mot de passe doit contenir au moins {{ limit }} caracteres.',
                     ),
                 ],
             ])
@@ -54,7 +54,7 @@ class RegistrationFormType extends AbstractType
                     'class' => 'h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-300',
                 ],
                 'constraints' => [
-                    new IsTrue( message: 'You should agree to our terms.' ),
+                    new IsTrue(message: 'Vous devez accepter les conditions.'),
                 ],
             ]);
     }

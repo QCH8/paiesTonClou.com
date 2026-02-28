@@ -23,7 +23,7 @@ class User implements PasswordAuthenticatedUserInterface, UserInterface
 
     #[ORM\Column(length: 180, unique: true)]
     #[Assert\NotBlank()]
-    #[Assert\Length(max: 180, maxMessage: "Can't be more than 180 chars.")]
+    #[Assert\Length(max: 180, maxMessage: 'Ne peut pas depasser 180 caracteres.')]
     #[Assert\Email]
     private ?string $email = null;
 

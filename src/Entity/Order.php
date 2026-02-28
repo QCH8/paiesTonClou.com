@@ -10,7 +10,7 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 #[ORM\Entity(repositoryClass: OrderRepository::class)]
 #[ORM\Table(name: '`order`')]
-#[UniqueEntity(fields: ['number'], message: 'Order number must be unique.')]
+#[UniqueEntity(fields: ['number'], message: 'Le numéro de commande doit être unique.')]
 class Order
 {
     #[ORM\Id]
@@ -91,7 +91,7 @@ class Order
     public function getShippingAddress(): ShippingAddress
     {
         if(!isset($this->shippingAddress)){
-            throw new \LogicException("Shipping Address not initialized yet.");
+            throw new \LogicException('Adresse de livraison non initialisée.');
         }
             return $this->shippingAddress;
     }

@@ -142,7 +142,7 @@ class StripeCheckoutCompletedProcessor
             return $lineItems->data ?? [];
         } catch (ApiErrorException $e) {
             // Pas de block du webhook si Stripe refuse cet appel annexe.
-            $this->logger->warning('Unable to fetch Stripe checkout line items', [
+            $this->logger->warning('Impossible de recuperer les lignes de la session Stripe Checkout', [
                 'checkout_session_id' => $checkoutSessionId,
                 'message' => $e->getMessage(),
             ]);

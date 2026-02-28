@@ -30,43 +30,43 @@ final class StripeWebhookController extends AbstractController
         #[Autowire('%env(STRIPE_WEBHOOK_SECRET)%')] string $webhookSecret
     ): Response
     {
-        // Stripe posts the raw event payload and a signature header.
+        // Raw Stripe event payload + signature header
         $payload = $request->getContent();
         $signature = $request->headers->get('Stripe-Signature');
         if (!$signature) {
-            return new JsonResponse(['error' => 'Missing Stripe-Signature header'], Response::HTTP_BAD_REQUEST);
+            return new JsonResponse(['error' => 'En-tete Stripe-Signature manquant'], Response::HTTP_BAD_REQUEST);
         }
 
         try {
-            // Reject payloads with invalid signature to prevent spoofed events.
+            // Rejection SE payloads invalide pour empecher les events factices / falsifiés
             $event = Webhook::constructEvent($payload, $signature, $webhookSecret);
         } catch (\UnexpectedValueException|SignatureVerificationException $e) {
-            return new JsonResponse(['error' => 'Invalid webhook payload or signature'], Response::HTTP_BAD_REQUEST);
+            return new JsonResponse(['error' => 'Payload webhook ou signature invalide'], Response::HTTP_BAD_REQUEST);
         }
 
-        // Idempotence guard: Stripe can retry events, we store each id only once.
+        // Idempotence : Stripe peut réessayer les events, stockage de chaque id une fois seulement
         $existingEvent = $stripeEventRepository->findOneBy(['stripeEventId' => $event->id]);
         if ($existingEvent) {
             return new JsonResponse(['received' => true, 'duplicate' => true]);
         }
 
-        // Persist full event trace for audit/debug.
+        // Stockage des SE entiers pour audit/debug
         $stripeEvent = (new StripeEvent())
             ->setStripeEventId($event->id)
             ->setType($event->type)
             ->setPayload(\json_decode($payload, true))
             ->setProcessingStatus('received');
 
-        // Business transition happens when checkout is completed.
+        // Business is Business quand le checkout est complété
         $orderToNotify = null;
         if ('checkout.session.completed' === $event->type) {
             /** @var \Stripe\Checkout\Session $checkoutSession */
             $checkoutSession = $event->data->object;
-            // Toute la logique métier Stripe est déléguée au service dédié.
+            // Appel service pour logique métier Stripe
             $orderToNotify = $stripeCheckoutCompletedProcessor->process($checkoutSession, $stripeEvent, $event->id, $em);
         }
 
-        // Mark the stored event as processed before commit.
+        // Passage de l'event stocké en "processed" avant persist
         $stripeEvent->setProcessingStatus('processed');
         $stripeEvent->setProcessedAt(new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris')));
 
@@ -77,7 +77,7 @@ final class StripeWebhookController extends AbstractController
             try {
                 $paymentConfirmationEmail->sendOrderPaidConfirmation($orderToNotify);
             } catch (\Throwable $e) {
-                $logger->error('Payment confirmation email failed', [
+                $logger->error('Echec de l\'envoi de l\'email de confirmation de paiement', [
                     'order_id' => $orderToNotify->getId(),
                     'order_number' => $orderToNotify->getNumber(),
                     'message' => $e->getMessage(),

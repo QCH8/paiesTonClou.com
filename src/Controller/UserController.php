@@ -56,7 +56,7 @@ final class UserController extends AbstractController
         $form->handleRequest($request);
 
         if (!$form->isSubmitted() && $form->isValid()){
-            $this->addFlash('error', 'Invalid form please check data.');
+            $this->addFlash('error', 'Le formulaire est invalide. Veuillez verifier les données.');
         }
 
         if ($form->isSubmitted() && $form->isValid()) {

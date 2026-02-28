@@ -31,6 +31,11 @@
                         </span>
                     </a>
                 </li>
+                <li class="text-sm text-slate-700 hover:underline">
+                    <a href="{{ path('app_order_index') }}" {% if currentRoute == 'app_order_index' %}aria-current="page"{% endif %}>
+                        Mes commandes
+                    </a>
+                </li>
                 <li class="text-sm text-slate-700"><a href="{{ path('app_user_profile') }}">Profil</a></li>
                 <li class="text-sm text-slate-700"><a href="{{ path('app_logout') }}">Deconnexion</a></li>
             {% else %}

@@ -52,7 +52,7 @@ final class StripeCheckoutSessionController extends AbstractController
             $session = $payment->startPayment($cart, $successUrl, $cancelUrl);
         } catch (\Throwable $e) {
             // Log le contexte technique + renvoi de l'User au panier.
-            $logger->error('Stripe checkout session creation failed', [
+            $logger->error('Echec de la creation de la session Stripe Checkout', [
                 'message' => $e->getMessage(),
                 'cart_id' => $cart->getId(),
                 'user_id' => $user->getId(),

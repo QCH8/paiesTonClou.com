@@ -24,14 +24,14 @@ class StripePayment
         foreach ($cart->getCartItem() as $item) {
             $productVariant = $item->getProductVariant();
             if (!$productVariant) {
-                throw new RuntimeException('Cart item has no product variant.');
+                throw new RuntimeException('Une ligne du panier ne contient pas de variante produit.');
             }
 
             // Prices are stored as HT snapshot + VAT snapshot in DB.
             $unitPriceHt = $item->getUnitPriceHTSnapshot();
             $vatRate = $item->getVatRateSnapshot();
             if ($unitPriceHt === null || $vatRate === null ) {
-                throw new RuntimeException('Cart item has no unit price or VAT rate.');
+                throw new RuntimeException('Une ligne du panier ne contient pas de prix HT ou de taux de TVA.');
             }
 
             // Stripe expects integer cents: send TTC as unit_amount.
@@ -71,7 +71,7 @@ class StripePayment
         }
 
         if ([] === $lineItems) {
-            throw new RuntimeException('Cannot start a Stripe checkout session with an empty cart.');
+            throw new RuntimeException('Impossible de creer une session Stripe Checkout avec un panier vide.');
         }
 
         // Metadata links Stripe events back to our local cart.

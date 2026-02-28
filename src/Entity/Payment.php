@@ -8,7 +8,7 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: PaymentRepository::class)]
-#[UniqueEntity(fields: ['stripeCheckoutSessionId'], message: 'Checkout session must be unique.')]
+#[UniqueEntity(fields: ['stripeCheckoutSessionId'], message: 'La session de paiement doit être unique.')]
 class Payment
 {
     #[ORM\Id]
