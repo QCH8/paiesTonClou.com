@@ -1,0 +1,82 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes commandes{% endblock %}
+
+{% block body %}
+<section class="mx-auto mt-8 max-w-6xl px-4 pb-12">
+    <div class="mb-6">
+        <h1 class="text-2xl font-semibold tracking-tight text-slate-900">Mes commandes</h1>
+        <p class="mt-1 text-sm text-slate-600">Retrouvez l'historique de vos commandes et leur statut.</p>
+    </div>
+
+    {% if orders is empty %}
+        <div class="rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-700 shadow-sm">
+            Vous n'avez pas encore de commande.
+        </div>
+    {% else %}
+        <div class="space-y-5">
+            {% for order in orders %}
+                <article class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+                    <div class="flex flex-col gap-3 border-b border-slate-100 pb-4 md:flex-row md:items-start md:justify-between">
+                        <div>
+                            <h2 class="text-lg font-semibold text-slate-900">
+                                Commande {{ order.number }}
+                            </h2>
+                            <p class="mt-1 text-sm text-slate-600">
+                                Passée le {{ order.createdAt ? order.createdAt|date('d/m/Y \\à H:i') : '-' }}
+                            </p>
+                        </div>
+
+                        <div class="text-sm text-slate-700 md:text-right">
+                            <p>
+                                <span class="font-medium text-slate-900">Statut:</span>
+                                {{ order.status ?: '-' }}
+                            </p>
+                            <p class="mt-1">
+                                <span class="font-medium text-slate-900">Total TTC:</span>
+                                {{ ((order.totalTTC ?? 0) / 100)|number_format(2, ',', ' ') }} {{ order.currency ?: 'EUR' }}
+                            </p>
+                            <p class="mt-1">
+                                <span class="font-medium text-slate-900">Paiement:</span>
+                                {% set payment = order.payments|last %}
+                                {{ payment ? payment.status : '-' }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 overflow-x-auto">
+                        <table class="min-w-full divide-y divide-slate-200 text-sm">
+                            <thead>
+                                <tr class="text-left text-xs uppercase tracking-wide text-slate-500">
+                                    <th class="px-2 py-2 font-medium">Produit</th>
+                                    <th class="px-2 py-2 font-medium">SKU</th>
+                                    <th class="px-2 py-2 font-medium">Quantité</th>
+                                    <th class="px-2 py-2 font-medium">Prix unitaire HT</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100 text-slate-700">
+                                {% for item in order.orderItems %}
+                                    <tr>
+                                        <td class="px-2 py-2">{{ item.nameSnapshot }}</td>
+                                        <td class="px-2 py-2">{{ item.stockKeepingUnitSnapshot }}</td>
+                                        <td class="px-2 py-2">{{ item.quantity }}</td>
+                                        <td class="px-2 py-2">
+                                            {{ ((item.unitPriceHTSnapshot ?? 0) / 100)|number_format(2, ',', ' ') }} {{ order.currency ?: 'EUR' }}
+                                        </td>
+                                    </tr>
+                                {% else %}
+                                    <tr>
+                                        <td class="px-2 py-3 text-slate-500" colspan="4">Aucun article detaillé pour cette commande.</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </article>
+            {% endfor %}
+        </div>
+    {% endif %}
+</section>
+{% endblock %}
+
+

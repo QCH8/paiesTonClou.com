@@ -1,0 +1,194 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mon profil{% endblock %}
+
+{% block body %}
+<section class="mx-auto mt-8 max-w-3xl px-4 pb-10">
+    <h1 class="mb-6 text-2xl font-semibold text-slate-900">Mon profil</h1>
+
+    {% for type, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="mb-4 rounded-lg border px-4 py-3 text-sm {{ type == 'success' ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-red-200 bg-red-50 text-red-800' }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <h2 class="text-lg font-semibold text-slate-900">Informations du compte</h2>
+
+        {{ form_start(form, {
+            action: path('app_user_edit'),
+            method: 'POST',
+            attr: {
+                id: 'profile-edit-form',
+                class: 'mt-4 space-y-4'
+            }
+        }) }}
+            <div>
+                {{ form_label(form.email, null, { label_attr: { class: 'mb-1 block text-sm font-medium text-slate-700' } }) }}
+                {{ form_widget(form.email) }}
+                {{ form_errors(form.email) }}
+            </div>
+
+            <div>
+                {{ form_label(form.plainPassword.first, null, { label_attr: { class: 'mb-1 block text-sm font-medium text-slate-700' } }) }}
+                {{ form_widget(form.plainPassword.first) }}
+                {{ form_errors(form.plainPassword.first) }}
+            </div>
+
+            <div>
+                {{ form_label(form.plainPassword.second, null, { label_attr: { class: 'mb-1 block text-sm font-medium text-slate-700' } }) }}
+                {{ form_widget(form.plainPassword.second) }}
+                {{ form_errors(form.plainPassword.second) }}
+            </div>
+            <p id="password-match-feedback" class="hidden text-sm text-red-600">
+                Les deux mots de passe ne correspondent pas.
+            </p>
+
+            <div>
+                {{ form_label(form.createdAtLabel, null, { label_attr: { class: 'mb-1 block text-sm font-medium text-slate-700' } }) }}
+                {{ form_widget(form.createdAtLabel) }}
+            </div>
+
+            <div class="flex items-center gap-3 pt-2">
+                <button
+                    id="profile-edit-trigger"
+                    type="button"
+                    class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                >
+                    Modifier
+                </button>
+
+                <button
+                    id="profile-cancel-btn"
+                    type="button"
+                    class="hidden rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                >
+                    Annuler
+                </button>
+
+                <button
+                    id="profile-save-btn"
+                    type="submit"
+                    class="hidden rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800"
+                >
+                    Enregistrer
+                </button>
+            </div>
+        {{ form_end(form) }}
+    </div>
+
+    {# todo: add div to display shipping addresses #}
+
+    <div class="mt-6 rounded-xl border border-red-200 bg-red-50 p-5">
+        <h2 class="text-lg font-semibold text-red-900">Supprimer mon compte</h2>
+        <p class="mt-2 text-sm text-red-800">
+            Cette action est irreversible. Toutes vos donnees liees a ce compte seront supprimees.
+        </p>
+        <p class="mt-2 text-sm text-red-800">
+            Pour confirmer, tapez <strong>SUPPRIMER</strong> puis cliquez sur le bouton.
+        </p>
+
+        <form
+            method="post"
+            action="{{ path('app_user_delete') }}"
+            class="mt-4 space-y-3"
+            onsubmit="return confirm('Confirmez-vous la suppression definitive de votre compte ?');"
+        >
+            <input type="hidden" name="_token" value="{{ csrf_token('delete_account') }}">
+
+            <label for="delete_confirmation" class="block text-sm font-medium text-red-900">
+                Confirmation
+            </label>
+            <input
+                id="delete_confirmation"
+                name="delete_confirmation"
+                type="text"
+                required
+                autocomplete="off"
+                class="w-full rounded-lg border border-red-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-200"
+                placeholder="Tapez SUPPRIMER"
+            >
+
+            <button
+                type="submit"
+                class="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700"
+            >
+                Supprimer mon compte
+            </button>
+        </form>
+    </div>
+</section>
+
+    <script>
+        (function () {
+            const form = document.getElementById('profile-edit-form');
+            const trigger = document.getElementById('profile-edit-trigger');
+            const cancelBtn = document.getElementById('profile-cancel-btn');
+            const saveBtn = document.getElementById('profile-save-btn');
+            const pwd1 = document.getElementById('user_edit_plainPassword_first');
+            const pwd2 = document.getElementById('user_edit_plainPassword_second');
+            const feedback = document.getElementById('password-match-feedback');
+
+            if (!form || !trigger || !cancelBtn || !saveBtn) return;
+
+            function validatePasswords() {
+                if (!pwd1 || !pwd2 || !feedback) return true;
+
+                const v1 = pwd1.value;
+                const v2 = pwd2.value;
+                const bothEmpty = v1 === '' && v2 === '';
+                const matches = v1 === v2;
+
+                const isValid = bothEmpty || matches;
+
+                feedback.classList.toggle('hidden', isValid);
+                saveBtn.disabled = !isValid;
+                saveBtn.classList.toggle('opacity-50', !isValid);
+                saveBtn.classList.toggle('cursor-not-allowed', !isValid);
+
+                return isValid;
+            }
+
+            trigger.addEventListener('click', function () {
+                document.querySelectorAll('[data-profile-editable="1"]').forEach(function (field) {
+                    field.removeAttribute('readonly');
+                    field.removeAttribute('disabled');
+                });
+
+                cancelBtn.classList.remove('hidden');
+                saveBtn.classList.remove('hidden');
+                trigger.classList.add('hidden');
+
+                validatePasswords();
+            });
+
+            cancelBtn.addEventListener('click', function () {
+                form.reset();
+                feedback.classList.add('hidden');
+
+                document.querySelectorAll('[data-profile-editable="1"]').forEach(function (field) {
+                    if (field.type === 'email' || field.type === 'text') {
+                        field.setAttribute('readonly', 'readonly');
+                    } else {
+                        field.setAttribute('disabled', 'disabled');
+                    }
+                });
+
+                saveBtn.disabled = false;
+                saveBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                saveBtn.classList.add('hidden');
+                cancelBtn.classList.add('hidden');
+                trigger.classList.remove('hidden');
+            });
+
+            if (pwd1) pwd1.addEventListener('input', validatePasswords);
+            if (pwd2) pwd2.addEventListener('input', validatePasswords);
+
+            form.addEventListener('submit', function (e) {
+                if (!validatePasswords()) e.preventDefault();
+            });
+        })();
+    </script>
+{% endblock %}

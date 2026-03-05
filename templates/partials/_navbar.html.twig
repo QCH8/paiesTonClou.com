@@ -1,0 +1,47 @@
+<nav class="w-full border-b bg-slate-200" aria-label="Navigation principale">
+    <div class="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
+        <a class="font-semibold text-slate-900" href="{{ path('shop_products_index') }}">Payes Ton Clou</a>
+
+        <button
+            class="rounded border px-3 py-2 md:hidden"
+            aria-controls="primary-nav"
+            aria-expanded="false"
+            data-controller="nav"
+            data-action="nav#toggle"
+        >
+            Menu
+        </button>
+
+        <ul id="primary-nav" class="hidden items-center gap-6 md:flex" data-nav-target="menu">
+            {% set currentRoute = app.request.attributes.get('_route') %}
+            {% set cartCount = cart_item_count() %}
+
+            <li class="hover:underline">
+                <a href="{{ path('shop_products_index') }}" {% if currentRoute == 'shop_products_index' %}aria-current="page"{% endif %}>
+                    Catalogue
+                </a>
+            </li>
+
+            {% if app.user %}
+                <li class="text-sm text-slate-700">
+                    <a href="{{ path('app_cart_index') }}" class="inline-flex items-center gap-2">
+                        Panier
+                        <span class="inline-flex min-w-5 items-center justify-center rounded-full bg-slate-900 px-1.5 py-0.5 text-xs font-semibold text-white">
+                            {{ cartCount }}
+                        </span>
+                    </a>
+                </li>
+                <li class="text-sm text-slate-700 hover:underline">
+                    <a href="{{ path('app_order_index') }}" {% if currentRoute == 'app_order_index' %}aria-current="page"{% endif %}>
+                        Mes commandes
+                    </a>
+                </li>
+                <li class="text-sm text-slate-700"><a href="{{ path('app_user_profile') }}">Profil</a></li>
+                <li class="text-sm text-slate-700"><a href="{{ path('app_logout') }}">Deconnexion</a></li>
+            {% else %}
+                <li class="text-sm text-slate-700"><a href="{{ path('app_login') }}">Panier</a></li>
+                <li class="text-sm text-slate-700"><a href="{{ path('app_login') }}">Connexion</a></li>
+            {% endif %}
+        </ul>
+    </div>
+</nav>
